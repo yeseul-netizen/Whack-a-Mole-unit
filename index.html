@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#d9c8f1">
+<title>Whack-a-Mole 영어 단어 게임</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="topnav.css">
+</head>
+<body>
+
+<!-- [추가] 휴대폰 세로 화면 안내 - 태블릿에는 안 뜨고, 휴대폰 화면 크기에서 세로로 시작했을 때만 뜬다.
+     가로로 돌리면 자동으로 사라지고, "이대로 할래요"를 누르면 세로로도 계속 플레이할 수 있다. -->
+<div id="rotate-overlay" style="display:none;position:fixed;inset:0;z-index:2147483000;background:linear-gradient(145deg,#eee3f6,#fff8e5 52%,#dff3e4);flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:36px;text-align:center;">
+    <div style="width:92px;height:148px;border:9px solid #9d7bc6;border-radius:26px;background:#ffffff;animation:rotateHintWAM 2.6s ease-in-out infinite;"></div>
+    <h2 style="font-family:'Hakgyoansim Poster',sans-serif;font-size:24px;color:#413347;margin:0;">화면을 가로로 돌려 주세요</h2>
+    <p style="font-family:'Hakgyoansim Boardmarker',sans-serif;font-size:16px;color:#6d5f77;margin:0;line-height:1.6;">가로로 놓으면 글자와 블록이 커져서<br>훨씬 편하게 할 수 있어요.</p>
+    <button type="button" onclick="dismissRotateOverlay()" style="font-family:'Hakgyoansim Poster',sans-serif;font-size:17px;color:#fff;background:linear-gradient(135deg,#ef9fbe,#e879a4);border:0;border-radius:18px;box-shadow:0 8px 20px rgba(83,58,96,.13);padding:16px 32px;cursor:pointer;">이대로 할래요</button>
+</div>
+<script src="js/rotate.js"></script>
+
+
+<!-- [상단 네비게이션 - 전체 게임 공통, 위치 고정] -->
+<div id="top-nav-bar" style="display:contents;">
+  <div class="nav-group left">
+    <button type="button" id="nav-home-btn" class="nav-btn glass-pill" title="처음으로" aria-label="처음으로">
+      <i class="fa-solid fa-house"></i>
+    </button>
+    <button type="button" id="nav-back-btn" class="nav-btn glass-pill" title="뒤로" aria-label="뒤로">
+      <i class="fa-solid fa-play" style="transform:scaleX(-1);"></i>
+    </button>
+    <button type="button" id="nav-forward-btn" class="nav-btn glass-pill" title="앞으로" aria-label="앞으로">
+      <i class="fa-solid fa-play"></i>
+    </button>
+  </div>
+  <div class="nav-group right">
+    <button type="button" id="nav-htp-btn" class="nav-btn glass-pill" title="How to Play" aria-label="How to Play">
+      <i class="fa-regular fa-circle-question"></i>
+    </button>
+    <button type="button" id="sfx-toggle-btn" class="nav-btn glass-pill" title="효과음 On/Off" aria-label="효과음 켜기 또는 끄기">
+      <i class="fa-solid fa-bell" id="sfx-toggle-icon"></i>
+    </button>
+    <button type="button" id="music-toggle-btn" class="nav-btn glass-pill" title="배경음악 On/Off" aria-label="배경음악 켜기 또는 끄기">
+      <i class="fa-solid fa-music" id="music-toggle-icon"></i>
+    </button>
+    <button type="button" id="fullscreen-toggle-btn" class="nav-btn glass-pill" title="전체화면" aria-label="전체화면">
+      <i class="fa-solid fa-expand" id="fullscreen-toggle-icon"></i>
+    </button>
+  </div>
+</div>
+<script src="topnav.js" data-backdrop="img/cover.png"></script>
+<script src="unit-data.js"></script>
+<script src="unit.js"></script>
+
+<div id="app">
+  <section id="introScreen" class="screen active" aria-label="게임 표지">
+    <div class="cover-frame">
+      <img alt="Whack-a-Mole 영어 단어 게임 표지" src="img/cover.png">
+      <button type="button" id="coverHelp" class="cover-hotspot" aria-label="How to Play"></button>
+      <button type="button" id="coverStart" class="cover-hotspot" aria-label="GAME START"></button>
+      <div data-unit-label hidden></div>
+    </div>
+  </section>
+
+  <section id="categoryScreen" class="screen">
+    <div class="app-shell">
+      <main class="panel">
+        <div class="hero-copy">
+          <span class="eyebrow">LESSON</span>
+          <h1>학년을 선택하세요.</h1>
+        </div>
+        <div id="categoryGrid" class="category-grid"></div>
+      </main>
+    </div>
+  </section>
+
+  <section id="subScreen" class="screen">
+    <div class="app-shell">
+      <main class="panel">
+        <div class="hero-copy">
+          <span class="eyebrow">LESSON</span>
+          <h2 id="subHeading">단원을 선택하세요.</h2>
+        </div>
+        <div id="subGrid" class="sub-grid"></div>
+      </main>
+    </div>
+  </section>
+
+  <section id="settingsScreen" class="screen">
+    <div class="app-shell">
+      <main class="panel">
+        <div class="hero-copy">
+          <span class="eyebrow">STEP 1</span>
+          <h2>어떻게 두더지를 잡을까요?</h2>
+        </div>
+        <div class="settings-grid">
+          <section class="setting-block">
+            <h3>게임 모드</h3>
+            <div id="modeChoices" class="choice-stack">
+              <button type="button" class="choice-card selected" data-mode="word">
+                <span><span class="choice-title">단어 익히기</span><span class="choice-desc">우리말 뜻에 맞는 영어 단어 두더지를 잡아요.<br>오답은 다른 단어로 나와요.</span></span>
+              </button>
+              <button type="button" class="choice-card" data-mode="spelling">
+                <span><span class="choice-title">철자 익히기</span><span class="choice-desc">철자가 조금씩 다른 두더지 중 정답을 찾고,<br>이어서 철자를 직접 입력해보세요.</span></span>
+              </button>
+            </div>
+          </section>
+          <section class="setting-block">
+            <h3>난이도</h3>
+            <div id="difficultyChoices" class="choice-stack">
+              <button type="button" class="choice-card" data-difficulty="easy">
+                <span><span class="choice-title">쉬움 · 7초</span><span class="choice-desc">두더지가 오래 보여서 처음 연습하기 좋아요.</span></span>
+              </button>
+              <button type="button" class="choice-card selected" data-difficulty="normal">
+                <span><span class="choice-title">보통 · 5초</span><span class="choice-desc">적당한 속도로 두더지 위치가 바뀌어요.</span></span>
+              </button>
+              <button type="button" class="choice-card" data-difficulty="hard">
+                <span><span class="choice-title">어려움 · 3초</span><span class="choice-desc">빠르게 움직이는 두더지를 집중해서 잡아요.</span></span>
+              </button>
+            </div>
+          </section>
+        </div>
+        <div class="setting-summary">
+          <div>
+            <strong id="settingsSummaryTitle">단어 익히기 · 보통</strong>
+            <div id="settingsSummaryText" style="color:var(--muted);font-size:16px;margin-top:5px"></div>
+          </div>
+          <button type="button" id="startGameBtn" class="primary-btn">GAME START</button>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <section id="gameScreen" class="screen">
+    <div class="game-shell">
+      <div class="status-bar">
+        <div class="stats">
+          <div class="stat"><span class="stat-label">진행</span><span id="roundStat" class="stat-value">1/10</span></div>
+          <div class="stat"><span class="stat-label">점수</span><span id="scoreStat" class="stat-value">0</span></div>
+          <div class="stat"><span class="stat-label">연속 정답</span><span id="streakStat" class="stat-value">0</span></div>
+          <div class="stat"><span class="stat-label">남은 시간</span><span id="timeStat" class="stat-value">100.0</span></div>
+        </div>
+        <div class="progress-wrap" aria-label="게임 진행률"><div id="progressBar" class="progress-bar"></div></div>
+      </div>
+      <div class="question-card">
+        <div class="question-word" id="questionWord">뜻</div>
+      </div>
+      <div id="moleGrid" class="mole-grid" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section id="resultScreen" class="screen">
+    <div class="app-shell">
+      <main class="panel">
+        <div class="hero-copy">
+          <span class="eyebrow">RESULT</span>
+          <h2 id="resultTitle">수고했어요!</h2>
+          <p id="resultMessage" class="lead"></p>
+        </div>
+        <div class="result-layout">
+          <section class="result-card">
+            <div style="text-align:center;color:var(--muted);font-weight:900;font-size:18px">최종 점수</div>
+            <div id="finalScore" class="score-big">0</div>
+            <div class="result-kpis">
+              <div class="kpi"><strong id="correctKpi">0/10</strong><span>정답 완료</span></div>
+              <div class="kpi"><strong id="timeKpi">0.0초</strong><span>진행 시간</span></div>
+              <div class="kpi"><strong id="streakKpi">0</strong><span>최고 연속 정답</span></div>
+              <div class="kpi"><strong id="bonusKpi">0점</strong><span>획득 보너스 점수</span></div>
+            </div>
+            <div class="result-actions">
+              <button type="button" id="retryBtn" class="primary-btn">같은 설정으로 다시</button>
+              <button type="button" id="reselectBtn" class="secondary-btn">단원 다시 선택</button>
+            </div>
+          </section>
+          <section class="result-card">
+            <h3 style="margin-bottom:14px;font-size:24px">문제별 결과</h3>
+            <div id="answerList" class="answer-list"></div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <!-- 아래 뜨는 것들(미리보기·토스트·팝업)도 #app 안에 둔다 — 무대와 같은 배율로 커지고 작아지게 -->
+  <div id="wordPreviewTooltip" class="word-preview-tooltip" role="tooltip" aria-hidden="true"></div>
+
+  <div id="toastLayer" class="toast-layer" aria-live="assertive"></div>
+
+  <div id="exitModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="exitTitle">
+  <div class="modal exit-modal">
+    <h2 id="exitTitle">게임을 종료할까요?</h2>
+    <img class="exit-mole" src="img/mole-sad.png" alt="시무룩한 두더지" loading="lazy">
+    <p>지금 나가면 풀던 문제가 사라져요.</p>
+    <div class="exit-actions">
+      <button type="button" id="exitConfirmBtn" class="danger-btn">나가기</button>
+      <button type="button" id="exitContinueBtn" class="secondary-btn">계속하기</button>
+    </div>
+  </div>
+</div>
+
+<div id="helpModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="modal">
+    <button type="button" id="helpCloseBtn" class="modal-close" aria-label="닫기">✕</button>
+    <span class="eyebrow">HOW TO PLAY</span>
+    <h2 id="helpTitle">두더지를 콕! 잡아 봐요</h2>
+    <div class="htp-goal">
+      <b>오늘의 학습 목표</b>
+      <p class="wrap-indent">우리말 뜻에 알맞은 영어 단어를 고를 수 있다.</p>
+    </div>
+    <div class="htp-section">
+      <h3>게임 방법</h3>
+      <ul class="htp-list">
+        <li class="wrap-indent">1. Game Start를 누르면 이번 단원의 단어로 게임이 시작됩니다. 모드와 난이도를 선택해요.</li>
+        <li>2. 우리말 뜻에 맞는 영어 단어를 가진 두더지를 찾아요.</li>
+        <li>3. 두더지를 클릭(터치)하거나, 두더지 옆 숫자에 해당하는 키보드 숫자키를 눌러요.</li>
+        <li>4. 10문제를 100초 안에 풀어요.</li>
+      </ul>
+    </div>
+    <div class="htp-section score">
+      <h3>점수 규칙</h3>
+      <ul class="htp-list">
+        <li>정답이면 +10점, 오답이면 -3점</li>
+        <li>3번 연속 정답이면 +5점 보너스 점수 추가!</li>
+        <li class="wrap-indent">철자 익히기 모드에서 철자를 정확히 입력하면 +5점 보너스 점수 추가</li>
+      </ul>
+    </div>
+    <div id="helpActions" class="modal-actions"></div>
+  </div>
+</div>
+
+<div id="spellModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="spellTitle">
+  <div class="modal spell-modal">
+    <span class="eyebrow">BONUS SPELLING</span>
+    <h2 id="spellTitle">철자를 입력하세요</h2>
+    <div class="spell-clue">
+      <div id="spellKo" style="font-size:36px;font-weight:900;margin-top:4px;font-family:var(--title-font)"></div>
+      <div id="caseNotice" style="font-size:15px;color:#8d5065;margin-top:7px"></div>
+    </div>
+    <input id="spellInput" class="spell-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="영어 철자 입력">
+    <div id="spellFeedback" style="min-height:26px;margin-top:9px;font-weight:900;font-size:18px;color:var(--bad)"></div>
+    <div class="spell-actions">
+      <button type="button" id="spellSubmitBtn" class="primary-btn">확인</button>
+      <button type="button" id="spellSkipBtn" class="soft-btn">건너뛰기</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<audio id="correctSfx" preload="auto" src="sfx/correct.mp3"></audio>
+<audio id="wrongSfx" preload="auto" src="sfx/wrong.mp3"></audio>
+<audio id="completeSfx" preload="auto" src="sfx/complete.mp3"></audio>
+
+<!-- [배경음악] -->
+<audio id="bgm-intro" src="bgm/intro.mp3" loop preload="metadata" autoplay></audio>
+<audio id="bgm-game" src="bgm/game.mp3" loop preload="metadata"></audio>
+<!-- [단어 발음] 정답을 맞혔을 때 그 단어의 음성을 재생하는 재사용 태그 -->
+<audio id="wordAudio" preload="none"></audio>
+<script src="js/words.js"></script>
+<script src="js/audio-list.js"></script>
+<script src="js/game.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/screens.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
