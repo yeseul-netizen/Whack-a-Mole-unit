@@ -95,12 +95,12 @@ button{touch-action:manipulation}
 }
 #coverHelp{left:21.53%;top:79.89%;width:27.51%;height:12.98%}
 #coverStart{left:49.16%;top:80%;width:29.37%;height:11.38%}
-/* 인트로: 지금 단원 이름 (시작 버튼 바로 위, 두더지 구멍과 버튼 사이 흙길) */
+/* 인트로: 지금 단원 이름 (A안 — 표지 위쪽, 세로 31.5% 지점에 가운데 맞춤) */
 [data-unit-label]{
-  position:absolute;left:50%;bottom:20.6%;transform:translateX(-50%);
+  position:absolute;left:50%;top:31.5%;bottom:auto;transform:translate(-50%,-50%);
   max-width:80%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   background:#fff;color:#df4f86;border:3px solid #f3b6ca;border-radius:999px;
-  padding:5px 22px;font:900 22px/1.2 var(--title-font);box-shadow:var(--soft-shadow);
+  padding:6px 26px;font:900 26px/1.2 var(--title-font);box-shadow:var(--soft-shadow);
   pointer-events:none;
 }
 [data-unit-label][hidden]{display:none}
