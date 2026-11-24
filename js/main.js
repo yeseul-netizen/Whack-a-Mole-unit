@@ -29,7 +29,6 @@ $("#spellSubmitBtn").addEventListener("click",submitSpelling);
 $("#spellSkipBtn").addEventListener("click",skipSpelling);
 $("#spellInput").addEventListener("keydown",e=>{if(e.key==="Enter")submitSpelling()});
 $("#retryBtn").addEventListener("click",startGame);
-$("#reselectBtn").addEventListener("click",enterCategoryScreen);
 $("#answerList").addEventListener("click",event=>{
   const button=event.target.closest(".answer-audio-button");
   if(!button)return;
